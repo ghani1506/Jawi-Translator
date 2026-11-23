@@ -1,0 +1,16 @@
+{
+  "name": "Jawi Translator",
+  "short_name": "Jawi",
+  "description": "Tukar tulisan Rumi ke Jawi, berfungsi tanpa internet. Dicipta oleh Ghani Ahmad.",
+  "lang": "ms",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f7d117",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
