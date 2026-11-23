@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f7d117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jawi Translator">
+<meta name="format-detection" content="telephone=no">
+<title>Jawi Translator</title>
+<meta name="author" content="Ghani Ahmad">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm classroom tool, confident, few hues
+   IDEA: a writing slate edged with the diagonal bands of the Brunei flag
+   PICTURE: the live Jawi output, large, right-to-left, beside the Rumi input
+   COLOUR and TYPE: flag yellow band, black/white stripe, red only for "check this"; Figtree + Noto Naskh Arabic
+   LAYOUT: modest title band, two-pane converter first, then personal dictionary and rules */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#15140f);--ink:light-dark(#17160f,#f3f0e2);--soft:light-dark(#5d5a4c,#b9b49d);--line:light-dark(#e4e0cf,#3a382d);--card:light-dark(#fffdf5,#1f1d16);--yel:#f7d117;--red:light-dark(#c8102e,#ff6b7d);--blue:light-dark(#1d5fa8,#8cbcf2);--green:light-dark(#1f7a4d,#7fd3a6)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+@supports not (color:light-dark(#000,#fff)){
+:root{--bg:#ffffff;--ink:#17160f;--soft:#5d5a4c;--line:#e4e0cf;--card:#fffdf5;--red:#c8102e;--blue:#1d5fa8;--green:#1f7a4d}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#15140f;--ink:#f3f0e2;--soft:#b9b49d;--line:#3a382d;--card:#1f1d16;--red:#ff6b7d;--blue:#8cbcf2;--green:#7fd3a6}}
+:root[data-theme=dark]{--bg:#15140f;--ink:#f3f0e2;--soft:#b9b49d;--line:#3a382d;--card:#1f1d16;--red:#ff6b7d;--blue:#8cbcf2;--green:#7fd3a6}}
+@supports not (color:color-mix(in srgb,red 50%,blue)){.w:hover{background:rgba(247,209,23,.4)}}
+*{-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Figtree,system-ui,sans-serif;overflow-x:clip}
+.jw{font-family:"Noto Naskh Arabic","Scheherazade New",Amiri,"Traditional Arabic","Geeza Pro",serif}
+header{background:var(--yel);color:#17160f;position:relative;padding:22px max(5vw,16px) 30px}
+header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12px;background:linear-gradient(to bottom,#fff 0 50%,#111 50% 100%)}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.05;margin:0 0 6px;font-weight:800;text-wrap:balance}
+header p{margin:0;max-width:62ch}
+header p.by{font-size:15px;margin:0 0 8px}
+footer{border-top:1px solid var(--line);padding:18px max(5vw,16px);font-size:14px;color:var(--soft);text-align:center}
+header .jw{font-size:22px;margin-inline-start:6px}
+.band{padding:clamp(20px,3.5vw,48px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px}
+@media(max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card h2{font-size:17px;margin:0;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+textarea,input[type=text]{width:100%;font:16px/1.5 Figtree,system-ui,sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
+textarea{min-height:260px;resize:vertical}
+textarea:focus,input:focus,button:focus-visible,.w:focus-visible{outline:3px solid var(--blue);outline-offset:1px}
+#out{min-height:260px;direction:rtl;text-align:right;white-space:pre-wrap;line-height:2.1;font-size:var(--fs,30px);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-wrap:anywhere}
+.w{cursor:pointer;border-radius:4px;padding:0 1px}
+.w:hover{background:color-mix(in srgb,var(--yel) 40%,transparent)}
+.w.g{text-decoration:underline dotted var(--red);text-decoration-thickness:2px;text-underline-offset:10px}
+.w.u{color:var(--green)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:600 15px Figtree,system-ui,sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+a.btn{display:inline-flex;align-items:center;font:600 15px Figtree,system-ui,sans-serif;min-height:44px;padding:0 16px;border-radius:10px;background:var(--yel);color:#17160f;text-decoration:none;border:1px solid #c9a800}
+.chip{min-height:40px;padding:0 12px;font:400 22px "Noto Naskh Arabic",serif;border-color:var(--red)}
+.chip small{font:600 13px Figtree,system-ui,sans-serif;color:var(--soft);margin-inline-start:6px}
+button.pri{background:#17160f;color:#fff;border-color:#17160f}
+:root[data-theme=dark] button.pri{background:var(--yel);color:#17160f;border-color:var(--yel)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) button.pri{background:var(--yel);color:#17160f;border-color:var(--yel)}}
+label.chk{display:flex;gap:8px;align-items:center;min-height:44px;font-size:15px}
+input[type=checkbox]{width:20px;height:20px;accent-color:#17160f}
+input[type=range]{width:120px}
+.legend{font-size:14px;color:var(--soft);display:flex;flex-wrap:wrap;gap:4px 16px}
+.legend b{font-weight:600;color:var(--ink)}
+.sw{display:inline-block;width:22px;height:0;border-bottom:2px dotted var(--red);vertical-align:middle;margin-inline-end:4px}
+.sw.u{border-bottom:3px solid var(--green)}.sw.d{border-bottom:2px solid var(--ink)}
+.stat{font-size:14px;color:var(--soft)}
+h3{font-size:24px;line-height:1.1;margin:0 0 10px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:start;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.jw{font-size:24px;direction:rtl;text-align:right}
+td button{min-height:36px;padding:0 10px;font-size:14px}
+.pal{display:flex;flex-wrap:wrap;gap:6px}
+.pal button{min-width:44px;padding:0 8px;font-size:22px;font-family:"Noto Naskh Arabic",serif;font-weight:400}
+details{border-top:1px solid var(--line);padding:12px 0}
+summary{cursor:pointer;font-weight:600;min-height:32px}
+.rules{columns:2 300px;column-gap:32px;font-size:15px}
+.rules li{break-inside:avoid;margin-bottom:6px}
+.rules .jw{font-size:20px}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);padding:20px;width:min(520px,92vw)}
+dialog::backdrop{background:rgb(0 0 0/.45)}
+#dJ{font-size:28px;direction:rtl;text-align:right}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#17160f;color:#fff;padding:10px 18px;border-radius:999px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.note{font-size:14px;color:var(--soft);margin:0}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Jawi Translator <span class="jw">جاوي</span></h1>
+    <p class="by">Dicipta oleh <b>Ghani Ahmad</b></p>
+    <p>Taip atau tampal teks Rumi, dan tulisan Jawi muncul serta-merta. Berfungsi tanpa internet. Ketik mana-mana perkataan Jawi untuk membetulkannya.</p>
+  </div>
+</header>
+
+<main class="band"><div class="wrap">
+  <div class="grid">
+    <section class="card">
+      <h2>Rumi <span class="stat" id="cnt">0 perkataan</span></h2>
+      <textarea id="inp" spellcheck="false" aria-label="Teks Rumi">Selamat datang ke sekolah kami. Murid-murid belajar matematik dan bahasa Melayu setiap hari.
+Jumlah markah ujian ialah 85 peratus, tetapi mereka masih perlu berlatih menulis Jawi.</textarea>
+      <div class="row">
+        <button id="clr">Kosongkan</button>
+        <label class="chk"><input type="checkbox" id="oNum" checked> Angka Jawi (٨٥)</label>
+        <label class="chk"><input type="checkbox" id="oDup" checked> Gandaan dengan ٢</label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Jawi
+        <span class="row"><label class="stat" for="fs">Saiz</label><input type="range" id="fs" min="20" max="48" value="30"><button class="pri" id="cpy">Salin Jawi</button></span>
+      </h2>
+      <div id="out" class="jw" lang="ms-Arab" aria-live="polite"></div>
+      <div class="legend">
+        <span><span class="sw d"></span><b>Senarai terbina</b></span>
+        <span><span class="sw"></span><b>Ikut peraturan</b>: sila semak</span>
+        <span><span class="sw u"></span><b>Kamus saya</b></span>
+      </div>
+      <p class="stat" id="chk"></p>
+      <div class="row" id="todo" aria-label="Perkataan untuk disemak"></div>
+    </section>
+  </div>
+</div></main>
+
+<section class="band" style="padding-top:0"><div class="wrap">
+  <h3>Kamus saya</h3>
+  <p class="note">Simpan ejaan Jawi yang betul untuk perkataan yang anda semak (contohnya di KamusDBP). Perkataan ini akan diguna dahulu, mengatasi peraturan dan senarai terbina. Ia disimpan dalam pelayar ini sahaja; gunakan Salin CSV untuk sandaran.</p>
+  <form id="addF" class="row" style="margin:12px 0">
+    <input type="text" id="aR" placeholder="Rumi, cth: kalau" style="flex:1 1 160px" autocomplete="off">
+    <input type="text" id="aJ" class="jw" placeholder="Jawi" dir="rtl" style="flex:1 1 160px;font-size:22px;padding:6px 12px" autocomplete="off">
+    <button class="pri" type="submit">Tambah</button>
+  </form>
+  <div class="pal" id="pal1" aria-label="Papan huruf Jawi"></div>
+  <div style="margin-top:14px" id="uList"></div>
+  <div class="row" style="margin-top:12px">
+    <button id="exp">Salin CSV</button>
+    <label class="chk" style="gap:6px"><span>Import CSV:</span><input type="file" id="imp" accept=".csv,.txt,text/csv,text/plain"></label>
+  </div>
+  <details>
+    <summary>Tampal CSV (rumi,jawi setiap baris)</summary>
+    <textarea id="impT" style="min-height:120px;margin-top:8px" placeholder="kalau,کالو"></textarea>
+    <button id="impB" style="margin-top:8px">Import teks ini</button>
+  </details>
+
+  <details>
+    <summary>Peraturan yang digunakan</summary>
+    <ul class="rules">
+      <li>Huruf khas: c <span class="jw">چ</span>, g <span class="jw">ݢ</span>, p <span class="jw">ڤ</span>, v <span class="jw">ۏ</span>, ng <span class="jw">ڠ</span>, ny <span class="jw">ڽ</span>, sy <span class="jw">ش</span>, kh <span class="jw">خ</span>, gh <span class="jw">غ</span>.</li>
+      <li>Vokal awal ditulis dengan alif: a <span class="jw">ا</span>, i <span class="jw">اي</span>, u/o <span class="jw">او</span>.</li>
+      <li>Suku kata terbuka dengan a ditulis alif (<span class="jw">ماکن</span>); suku kata tertutup tanpa alif (<span class="jw">کن</span>).</li>
+      <li>i ditulis <span class="jw">ي</span>, u dan o ditulis <span class="jw">و</span>; e pepet tidak ditulis (<span class="jw">بسر</span>).</li>
+      <li>a di hujung kata: tidak ditulis selepas suku kata terbuka berbunyi a (<span class="jw">نام</span>), ditulis selepas suku kata tertutup (<span class="jw">کرجا</span>).</li>
+      <li>k di akhir suku kata menjadi <span class="jw">ق</span> (<span class="jw">انق</span>, <span class="jw">تيدق</span>).</li>
+      <li>Hamzah bagi vokal berturutan (<span class="jw">باءيق</span>, <span class="jw">ڤرکاتاٴن</span>); diftong di hujung kata (<span class="jw">ڤنتاي</span>, <span class="jw">ڤولاو</span>).</li>
+      <li>Akhiran -nya <span class="jw">ڽ</span>, -lah <span class="jw">له</span>, -kah <span class="jw">که</span>; awalan di- dirapatkan (<span class="jw">دباچ</span>).</li>
+      <li>Kata ganda ditulis dengan angka dua (<span class="jw">بوکو٢</span>). Tanda baca: <span class="jw">، ؟ ؛</span></li>
+      <li>Kata pinjaman Arab, nama khas dan kata yang ejaannya tidak mengikut peraturan diambil daripada senarai terbina. Hasil "ikut peraturan" ialah tekaan; semak dengan sumber rasmi.</li>
+    </ul>
+  </details>
+</div></section>
+
+<footer>Jawi Translator · Dicipta oleh <b>Ghani Ahmad</b> · © 2026 Ghani Ahmad. Hak cipta terpelihara.</footer>
+
+<dialog id="dlg">
+  <form method="dialog" id="dF">
+    <p style="margin:0 0 6px;color:var(--soft)">Betulkan ejaan Jawi untuk</p>
+    <h3 id="dR" style="margin:0 0 12px"></h3>
+    <div class="row" style="margin-bottom:8px">
+      <a id="dChk" class="btn" href="https://kamus.dbp.gov.my" target="_blank" rel="noopener">Semak di KamusDBP ↗</a>
+    </div>
+    <p class="note" style="margin-bottom:12px">Butang ini menyalin perkataan dan membuka KamusDBP. Log masuk, tampal dalam kotak carian, kemudian salin ejaan Jawi yang betul ke kotak di bawah.</p>
+    <input type="text" id="dJ" class="jw" dir="rtl" autocomplete="off">
+    <div class="pal" id="pal2" style="margin:12px 0"></div>
+    <div class="row" style="justify-content:flex-end">
+      <button value="cancel" type="submit" formnovalidate>Batal</button>
+      <button class="pri" id="dSave" value="save" type="submit">Simpan ke Kamus saya</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+{
+const D={"dan":"دان","yang":"يڠ","di":"دي","ke":"ک","dari":"دري","daripada":"درڤد","kepada":"کڤد","pada":"ڤد","dengan":"دڠن","untuk":"اونتوق","bagi":"باݢي","oleh":"اوليه","tentang":"تنتڠ","atau":"اتاو","tetapi":"تتاڤي","kerana":"کران","jika":"جک","kalau":"کالو","supaya":"سوڤاي","agar":"اݢر","seperti":"سڤرتي","juga":"جوݢ","lagi":"لاݢي","pun":"ڤون","sahaja":"سهاج","saja":"ساج","hanya":"هاڽ","sangat":"ساڠت","amat":"امت","lebih":"لبيه","kurang":"کورڠ","semua":"سموا","setiap":"ستياڤ","banyak":"باڽق","sedikit":"سديکيت","tidak":"تيدق","tak":"تق","bukan":"بوکن","jangan":"جاڠن","belum":"بلوم","sudah":"سوده","telah":"تله","akan":"اکن","sedang":"سدڠ","masih":"ماسيه","boleh":"بوليه","mesti":"مستي","perlu":"ڤرلو","mahu":"ماهو","hendak":"هندق","ialah":"اياله","adalah":"اداله","ia":"اي","dia":"دي","saya":"ساي","kami":"کامي","kamu":"کامو","kita":"کيت","anda":"اندا","awak":"اوق","engkau":"اڠکاو","beliau":"بلياو","mereka":"مريک","ini":"اين","itu":"ايت","sini":"سيني","situ":"سيتو","sana":"سان","ada":"اد","apa":"اڤ","siapa":"سياڤ","mana":"مان","bila":"بيلا","mengapa":"مڠاڤ","kenapa":"کناڤ","bagaimana":"باݢايمان","berapa":"براڤ","buka":"بوک","suka":"سوک","muka":"موک","lima":"ليم","satu":"سات","dua":"دوا","tiga":"تيݢ","empat":"امڤت","enam":"انم","tujuh":"توجوه","lapan":"لاڤن","sembilan":"سمبيلن","sepuluh":"سڤولوه","puluh":"ڤولوه","ratus":"راتوس","ribu":"ريبو","juta":"جوتا","kosong":"کوسوڠ","negara":"نݢارا","bangsa":"بڠسا","agama":"اݢام","raja":"راج","sultan":"سلطان","baginda":"باݢيندا","kepala":"کڤالا","kereta":"کريتا","bahasa":"بهاس","harga":"هرݢ","nama":"نام","kerja":"کرجا","bapa":"باڤ","ayah":"ايه","ibu":"ايبو","emak":"مق","kakak":"ککق","abang":"ابڠ","adik":"اديق","kawan":"کاون","guru":"ݢورو","cikgu":"چيقݢو","murid":"موريد","pelajar":"ڤلاجر","belajar":"بلاجر","buku":"بوکو","kelas":"کلس","sekolah":"سکوله","menengah":"منڠه","rumah":"رومه","jalan":"جالن","air":"اءير","baik":"باءيق","besar":"بسر","kecil":"کچيل","pendek":"ڤينديق","baru":"بارو","lama":"لام","cantik":"چنتيق","hari":"هاري","esok":"ايسوق","semalam":"سمالم","sekarang":"سکارڠ","dahulu":"دهولو","kemudian":"کمودين","pagi":"ڤاݢي","petang":"ڤتڠ","malam":"مالم","makan":"ماکن","minum":"مينوم","pergi":"ڤرݢي","datang":"داتڠ","baca":"باچ","tulis":"توليس","menulis":"منوليس","berlatih":"برلاتيه","nombor":"نومبور","matematik":"ماتيماتيک","sains":"ساءينس","ujian":"اوجين","peperiksaan":"ڤڤريقساٴن","markah":"مارکه","soalan":"سوالن","jawapan":"جواڤن","betul":"بتول","salah":"ساله","jumlah":"جومله","tambah":"تمبه","tolak":"تولق","darab":"دارب","bahagi":"بهاݢي","pecahan":"ڤچاهن","perpuluhan":"ڤرڤولوهن","peratus":"ڤراتوس","sudut":"سودوت","segi":"سݢي","bulatan":"بولتن","garis":"ݢاريس","luas":"لواس","isipadu":"ايسيڤادو","perimeter":"ڤريميتر","nisbah":"نسبه","kadar":"قدر","purata":"ڤوراتا","graf":"ݢراف","jadual":"جدول","tingkatan":"تيڠکتن","tahun":"تاهون","bulan":"بولن","minggu":"ميڠݢو","jam":"جم","minit":"مينيت","kamus":"کاموس","jawi":"جاوي","rumi":"رومي","huruf":"حروف","perkataan":"ڤرکاتاٴن","ayat":"ايات","tulisan":"توليسن","dewan":"ديوان","pustaka":"ڤوستاک","pendidikan":"ڤنديديقن","kementerian":"کمنترين","kerajaan":"کراجاٴن","rakyat":"رعيت","masyarakat":"مشارکت","maklumat":"معلومت","sejarah":"سجاره","hadiah":"هديه","sayang":"سايڠ","cinta":"چينتا","hati":"هاتي","mata":"مات","orang":"اورڠ","anak":"انق","lelaki":"للاکي","perempuan":"ڤرمڤوان","wang":"واڠ","ringgit":"ريڠݢيت","kedai":"کداي","nasi":"ناسي","ikan":"ايکن","ayam":"ايم","dalam":"دالم","luar":"لوار","atas":"اتس","bawah":"باوه","depan":"دڤن","belakang":"بلاکڠ","antara":"انتارا","selamat":"سلامت","salam":"سلام","assalamualaikum":"السلام عليکم","maaf":"معاف","terima":"تريما","kasih":"کاسيه","khabar":"خبر","melayu":"ملايو","brunei":"بروني","darussalam":"دارالسلام","bandar":"بندر","seri":"سري","begawan":"بݢاوان","beraja":"براج","pengiran":"ڤڠيرن","puteri":"ڤوتري","haji":"حاجي","hajah":"حاجه","awang":"اواڠ","dayang":"دايڠ","bin":"بن","binti":"بنت","muhammad":"محمد","mohammad":"محمد","ahmad":"احمد","ghani":"غني","allah":"الله","islam":"اسلام","nabi":"نبي","rasul":"رسول","quran":"قرءان","solat":"صلاة","sembahyang":"سمبهيڠ","puasa":"ڤواسا","zakat":"زکاة","masjid":"مسجد","doa":"دعا","ilmu":"علمو","alam":"عالم","manusia":"منوسيا","dunia":"دنيا","akhirat":"اخيرة","hukum":"حکوم","fikir":"فيکير","faham":"فهم","masa":"ماس","waktu":"وقتو","sebab":"سبب","awal":"اول","akhir":"اخير","soal":"سوال","jawab":"جواب","kitab":"کتاب","tarikh":"تاريخ","isnin":"اثنين","selasa":"ثلاث","rabu":"رابو","khamis":"خميس","jumaat":"جمعة","sabtu":"سبتو","ahad":"احد","bunga":"بوڠا","punya":"ڤوڽا","data":"دات"};
+const CM={b:'ب',c:'چ',d:'د',f:'ف',g:'ݢ',h:'ه',j:'ج',k:'ک',l:'ل',m:'م',n:'ن',p:'ڤ',q:'ق',r:'ر',s:'س',t:'ت',v:'ۏ',w:'و',x:'کس',y:'ي',z:'ز',ng:'ڠ',ny:'ڽ',sy:'ش',kh:'خ',gh:'غ',dz:'ذ',"'":'ء'};
+const DG=['ng','ny','sy','kh','gh','dz'];
+const PAL=['ا','ب','ت','ث','ج','چ','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ڠ','ف','ڤ','ق','ک','ݢ','ل','م','ن','و','ۏ','ه','ة','ء','ٴ','ي','ى','ڽ','٢'];
+const $=id=>document.getElementById(id);
+let user={};
+try{user=JSON.parse(localStorage.getItem('rj-user')||'{}')||{}}catch(e){user={}}
+const saveUser=()=>{try{localStorage.setItem('rj-user',JSON.stringify(user))}catch(e){}};
+const opt={num:true,dup:true};
+
+const tok=w=>{const o=[];for(let i=0;i<w.length;){const t=w.substr(i,2);if(DG.includes(t)){o.push({c:1,v:t});i+=2;continue}const ch=w[i++];o.push({c:!'aeiou'.includes(ch),v:ch})}return o};
+const syl=t=>{const vi=[];t.forEach((x,j)=>{if(!x.c)vi.push(j)});if(!vi.length)return null;const S=[];let st=0;
+  vi.forEach((v,k)=>{const n=vi[k+1];const s={on:t.slice(st,v).map(x=>x.v),v:t[v].v,co:[]};
+    if(n===undefined)s.co=t.slice(v+1).map(x=>x.v);else{const b=n-v-1;if(b<=1)st=v+1;else{s.co=t.slice(v+1,n-1).map(x=>x.v);st=n-1}}S.push(s)});return S};
+function rules(w){
+  const t=tok(w),S=syl(t);
+  if(!S)return t.map(x=>CM[x.v]||x.v).join('');
+  let out='';
+  S.forEach((s,i)=>{
+    const last=i===S.length-1,prev=S[i-1],v=s.v,closed=s.co.length>0;
+    const on=s.on.map(c=>CM[c]||c).join('');let nu='';
+    if(!s.on.length){
+      if(i===0)nu=v==='i'?'اي':(v==='u'||v==='o')?'او':'ا';
+      else{const pv=prev.v,pc=prev.co.length>0;
+        if(v==='a'){nu=(pv==='a'&&!pc)?(closed?'ٴ':'ٴا'):'ا'}
+        else if('iuo'.includes(v)){const L=v==='i'?'ي':'و';
+          if(pv==='a'&&!pc&&last&&!closed)nu=L;else if('aiuo'.includes(pv))nu='ء'+L;else nu=L}
+      }
+    }else if(v==='a'){nu=closed?'':(last&&i>0)?((prev.co.length>0||'iuo'.includes(prev.v))?'ا':''):'ا'}
+    else if(v==='e'){nu=(last&&!closed&&i>0)?'ي':''}
+    else nu=v==='i'?'ي':'و';
+    out+=on+nu+s.co.map(c=>c==='k'?'ق':(CM[c]||c)).join('');
+  });
+  return out;
+}
+const lookup=w=>user[w]?{j:user[w],s:'u'}:D[w]?{j:D[w],s:'d'}:null;
+function convWord(raw){
+  const w=raw.toLowerCase();
+  const k=lookup(w);if(k)return k;
+  if(w.includes('-')){const p=w.split('-').filter(Boolean);
+    if(p.length===2&&p[0].endsWith(p[1])){const a=convWord(p[0]);return{j:a.j+(opt.dup?'٢':'-'+convWord(p[1]).j),s:a.s}}
+    const ps=p.map(convWord);return{j:ps.map(x=>x.j).join('-'),s:ps.some(x=>x.s==='g')?'g':ps.some(x=>x.s==='u')?'u':'d'}}
+  for(const[suf,J]of[['nya','ڽ'],['lah','له'],['kah','که']]){
+    if(w.length>suf.length+2&&w.endsWith(suf)){const st=w.slice(0,-suf.length),s=lookup(st);
+      if(s)return{j:s.j+J,s:s.s};if(suf==='nya'&&w.length>=6)return{j:rules(st)+J,s:'g'}}}
+  if(w.startsWith('di')&&w.length>4){const s=lookup(w.slice(2));if(s)return{j:'د'+s.j,s:s.s}}
+  if(w.endsWith('an')){const st=w.slice(0,-2);if(!'aeiou'.includes(st.slice(-1))&&(st.match(/[aeiou]/g)||[]).length>=2){const s=lookup(st);return{j:(s?s.j:rules(st))+'ن',s:s?s.s:'g'}}}
+  return{j:rules(w),s:'g'};
+}
+const AD='٠١٢٣٤٥٦٧٨٩';
+const punct=s=>s.replace(/,/g,'،').replace(/\?/g,'؟').replace(/;/g,'؛').replace(/[0-9]/g,d=>opt.num?AD[d]:d);
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let plain='';
+function render(){
+  const txt=$('inp').value;const parts=txt.split(/([A-Za-z](?:[A-Za-z'-]*[A-Za-z])?)/);
+  let html='',pl='',n=0,g=0;const todo=new Map();
+  parts.forEach((p,i)=>{
+    if(i%2){const r=convWord(p);n++;if(r.s==='g'){g++;todo.set(p.toLowerCase(),r.j)}
+      html+=`<span class="w ${r.s}" tabindex="0" role="button" data-w="${esc(p.toLowerCase())}" data-j="${esc(r.j)}">${esc(r.j)}</span>`;pl+=r.j}
+    else{const q=punct(p);html+=esc(q);pl+=q}
+  });
+  $('out').innerHTML=html||'<span style="color:var(--soft);font-size:18px">Tulisan Jawi akan muncul di sini</span>';plain=pl;
+  $('cnt').textContent=n+' perkataan';
+  $('chk').textContent=n?(g?`${g} daripada ${n} perkataan ditukar ikut peraturan. Semak perkataan ini di KamusDBP:`:'Semua perkataan didapati dalam senarai.'):'';
+  $('todo').innerHTML=[...todo].map(([w,j])=>`<button type="button" class="chip w" data-w="${esc(w)}" data-j="${esc(j)}">${esc(j)}<small>${esc(w)}</small></button>`).join('');
+}
+const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),1800)};
+function copyOld(s){const t=document.createElement('textarea');t.value=s;t.setAttribute('readonly','');t.style.cssText='position:fixed;top:0;left:0;opacity:0;font-size:16px';document.body.appendChild(t);t.focus();t.select();t.setSelectionRange(0,s.length);let ok=false;try{ok=document.execCommand('copy')}catch(e){}t.remove();return ok}
+async function copy(s,msg){try{if(!navigator.clipboard)throw 0;await navigator.clipboard.writeText(s);toast(msg)}catch(e){toast(copyOld(s)?msg:'Tidak dapat menyalin. Pilih teks dan salin secara manual.')}}
+
+function renderUser(){
+  const ks=Object.keys(user).sort();
+  $('uList').innerHTML=ks.length?`<table><thead><tr><th>Rumi</th><th style="text-align:right">Jawi</th><th></th></tr></thead><tbody>${ks.map(k=>`<tr><td>${esc(k)}</td><td class="jw">${esc(user[k])}</td><td style="text-align:end"><button data-del="${esc(k)}">Padam</button></td></tr>`).join('')}</tbody></table>`:'<p class="note">Belum ada perkataan. Tambah di atas, atau ketik perkataan dalam kotak Jawi.</p>';
+}
+function addUser(r,j){r=r.trim().toLowerCase();j=j.trim();if(!r||!j||!/^[a-z'-]+$/.test(r))return false;user[r]=j;saveUser();renderUser();render();return true}
+function importCSV(t){let c=0;t.split(/\r?\n/).forEach(l=>{const m=l.split(/[,\t;]/);if(m.length>=2&&addUser(m[0].replace(/"/g,''),m.slice(1).join(',').replace(/"/g,'')))c++});toast(c+' perkataan diimport')}
+
+function buildPal(el,target){el.innerHTML=PAL.map(c=>`<button type="button" data-c="${c}">${c}</button>`).join('');
+  el.addEventListener('click',e=>{const b=e.target.closest('button[data-c]');if(!b)return;const t=$(target);const s=t.selectionStart??t.value.length,en=t.selectionEnd??t.value.length;
+    t.value=t.value.slice(0,s)+b.dataset.c+t.value.slice(en);t.focus();const p=s+b.dataset.c.length;try{t.setSelectionRange(p,p)}catch(_){}})}
+buildPal($('pal1'),'aJ');buildPal($('pal2'),'dJ');
+
+const openFix=el=>{$('dR').textContent=el.dataset.w;$('dJ').value=el.dataset.j;const d=$('dlg');if(d.showModal)d.showModal();else d.setAttribute('open','')};
+$('out').addEventListener('click',e=>{const el=e.target.closest('.w');if(el)openFix(el)});
+$('out').addEventListener('keydown',e=>{const el=e.target.closest('.w');if(el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openFix(el)}});
+$('todo').addEventListener('click',e=>{const el=e.target.closest('.w');if(el)openFix(el)});
+$('dChk').addEventListener('click',()=>copy($('dR').textContent,'"'+$('dR').textContent+'" disalin. Tampal di KamusDBP.'));
+$('dlg').addEventListener('close',()=>{if($('dlg').returnValue==='save'&&addUser($('dR').textContent,$('dJ').value))toast('Disimpan ke Kamus saya')});
+$('inp').addEventListener('input',()=>{render();try{localStorage.setItem('rj-text',$('inp').value)}catch(e){}});
+$('clr').addEventListener('click',()=>{$('inp').value='';render();$('inp').focus()});
+$('cpy').addEventListener('click',()=>copy(plain,'Teks Jawi disalin'));
+$('oNum').addEventListener('change',e=>{opt.num=e.target.checked;render()});
+$('oDup').addEventListener('change',e=>{opt.dup=e.target.checked;render()});
+$('fs').addEventListener('input',e=>$('out').style.setProperty('--fs',e.target.value+'px'));
+$('addF').addEventListener('submit',e=>{e.preventDefault();if(addUser($('aR').value,$('aJ').value)){toast('Ditambah');$('aR').value='';$('aJ').value='';$('aR').focus()}else toast('Isi Rumi (huruf sahaja) dan Jawi')});
+$('uList').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(b){delete user[b.dataset.del];saveUser();renderUser();render()}});
+$('exp').addEventListener('click',()=>copy(Object.keys(user).sort().map(k=>k+','+user[k]).join('\n'),'CSV disalin'));
+$('imp').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>importCSV(String(r.result));r.readAsText(f)});
+$('impB').addEventListener('click',()=>{importCSV($('impT').value);$('impT').value=''});
+try{const s=localStorage.getItem('rj-text');if(s)$('inp').value=s}catch(e){}
+renderUser();render();
+window.__rj={rules,convWord};
+}
+</script>
+</body>
+</html>
